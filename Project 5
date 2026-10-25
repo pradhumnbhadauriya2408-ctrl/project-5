@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Leafwork – Houseplant Shop</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#eef3ef;--ink:#12302b;--muted:#5b716c;--card:#fff;--line:#d3dfd9;--accent:#f0b429;--accent-ink:#2a1f00;--coral:#e4572e;--radius:14px}
+@media (prefers-color-scheme:dark){:root{--bg:#0e1f1c;--ink:#e6f1ec;--muted:#93aba4;--card:#16302b;--line:#27463f;--accent-ink:#2a1f00}}
+*{box-sizing:border-box}
+body{margin:0;font-family:"Bricolage Grotesque",system-ui,sans-serif;background:var(--bg);color:var(--ink);line-height:1.5}
+button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 5vw;position:sticky;top:0;background:var(--bg);border-bottom:1px solid var(--line);z-index:5}
+.logo{font-weight:800;font-size:1.6rem;letter-spacing:-.03em}
+.cart-btn{display:flex;align-items:center;gap:10px;background:var(--ink);color:var(--bg);border:0;border-radius:999px;padding:10px 18px;cursor:pointer;font-weight:600}
+.badge{background:var(--accent);color:var(--accent-ink);border-radius:999px;min-width:24px;padding:0 7px;text-align:center;font-weight:800}
+.hero{padding:48px 5vw 20px;max-width:900px}
+.hero h1{font-size:clamp(2.2rem,6vw,4rem);line-height:1.02;letter-spacing:-.035em;margin:0 0 12px;font-weight:800}
+.hero p{color:var(--muted);margin:0;max-width:52ch;font-size:1.1rem}
+.tools{display:flex;flex-wrap:wrap;gap:12px;padding:20px 5vw}
+.tools input,.tools select{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px}
+.tools input{flex:1;min-width:200px}
+.chips{display:flex;gap:8px;flex-wrap:wrap;padding:0 5vw}
+.chip{background:transparent;border:1px solid var(--line);border-radius:999px;padding:6px 16px;cursor:pointer}
+.chip[aria-pressed=true]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:20px;padding:24px 5vw 60px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;display:flex;flex-direction:column}
+.thumb{height:150px;display:grid;place-items:center;font-size:4.2rem}
+.card-body{padding:16px;display:flex;flex-direction:column;gap:6px;flex:1}
+.card h3{margin:0;font-size:1.15rem}
+.meta{color:var(--muted);font-size:.9rem;margin:0}
+.foot{display:flex;align-items:center;justify-content:space-between;margin-top:auto;padding-top:10px}
+.price{font-weight:800;font-size:1.25rem}
+.add{background:var(--accent);color:var(--accent-ink);border:0;border-radius:10px;padding:8px 16px;font-weight:700;cursor:pointer}
+.add:active{transform:scale(.96)}
+.empty{grid-column:1/-1;text-align:center;color:var(--muted);padding:40px}
+/* drawer */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);opacity:0;pointer-events:none;transition:opacity .2s;z-index:10}
+.overlay.open{opacity:1;pointer-events:auto}
+aside{position:fixed;top:0;right:0;height:100%;width:min(420px,100%);background:var(--bg);z-index:11;transform:translateX(100%);transition:transform .25s;display:flex;flex-direction:column;border-left:1px solid var(--line)}
+aside.open{transform:none}
+.drawer-head{display:flex;justify-content:space-between;align-items:center;padding:18px 20px;border-bottom:1px solid var(--line)}
+.drawer-head h2{margin:0;font-size:1.3rem}
+.icon-btn{background:none;border:1px solid var(--line);border-radius:8px;width:34px;height:34px;cursor:pointer}
+.items{flex:1;overflow-y:auto;padding:12px 20px;margin:0;list-style:none}
+.row{display:grid;grid-template-columns:48px 1fr auto;gap:12px;align-items:center;padding:12px 0;border-bottom:1px solid var(--line)}
+.row .em{font-size:2rem;text-align:center}
+.row b{display:block}
+.qty{display:flex;align-items:center;gap:8px;margin-top:4px}
+.qty button{width:26px;height:26px;border-radius:6px;border:1px solid var(--line);background:var(--card);cursor:pointer}
+.rm{background:none;border:0;color:var(--coral);cursor:pointer;font-size:.85rem;margin-top:4px;padding:0}
+.totals{padding:16px 20px;border-top:1px solid var(--line)}
+.line{display:flex;justify-content:space-between;color:var(--muted)}
+.line.total{color:var(--ink);font-weight:800;font-size:1.3rem;margin-top:6px}
+.primary{width:100%;margin-top:14px;background:var(--ink);color:var(--bg);border:0;border-radius:12px;padding:13px;font-weight:700;cursor:pointer}
+.primary:disabled{opacity:.4;cursor:not-allowed}
+.ghost{background:none;border:0;color:var(--muted);text-decoration:underline;cursor:pointer;margin-top:8px;width:100%}
+/* modal */
+.modal{position:fixed;inset:0;display:none;place-items:center;z-index:20;padding:16px}
+.modal.open{display:grid}
+.modal-bg{position:absolute;inset:0;background:rgba(0,0,0,.55)}
+.sheet{position:relative;background:var(--card);border-radius:18px;padding:26px;width:min(480px,100%);max-height:90vh;overflow-y:auto}
+.sheet h2{margin:0 0 4px}
+.sheet table{width:100%;border-collapse:collapse;margin:14px 0}
+.sheet td{padding:6px 0;border-bottom:1px solid var(--line)}
+.sheet td:last-child{text-align:right}
+.ok{text-align:center;padding:10px 0}
+.ok .big{font-size:3.5rem}
+.toast{position:fixed;bottom:20px;left:50%;transform:translate(-50%,80px);background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:999px;transition:transform .25s;z-index:30}
+.toast.show{transform:translate(-50%,0)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">Leafwork</div>
+  <button class="cart-btn" id="openCart" aria-label="Open cart">Cart <span class="badge" id="count">0</span></button>
+</header>
+
+<section class="hero">
+  <h1>Plants that survive your schedule.</h1>
+  <p>Pick low-effort greens for desks, shelves and sunny windows. Add them to your cart and preview your order.</p>
+</section>
+
+<div class="tools">
+  <input id="search" type="search" placeholder="Search plants" aria-label="Search plants">
+  <select id="sort" aria-label="Sort plants">
+    <option value="default">Sort: Featured</option>
+    <option value="low">Price: low to high</option>
+    <option value="high">Price: high to low</option>
+    <option value="name">Name: A to Z</option>
+  </select>
+</div>
+<div class="chips" id="chips"></div>
+<main class="grid" id="grid"></main>
+
+<div class="overlay" id="overlay"></div>
+<aside id="drawer" aria-label="Shopping cart" aria-hidden="true">
+  <div class="drawer-head"><h2>Your cart</h2><button class="icon-btn" id="closeCart" aria-label="Close cart">✕</button></div>
+  <ul class="items" id="items"></ul>
+  <div class="totals">
+    <div class="line"><span>Subtotal</span><span id="sub">₹0</span></div>
+    <div class="line"><span>GST (5%)</span><span id="tax">₹0</span></div>
+    <div class="line"><span>Delivery</span><span id="ship">₹0</span></div>
+    <div class="line total"><span>Total</span><span id="total">₹0</span></div>
+    <button class="primary" id="checkout">Preview checkout</button>
+    <button class="ghost" id="clear">Empty cart</button>
+  </div>
+</aside>
+
+<div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="mTitle">
+  <div class="modal-bg" id="modalBg"></div>
+  <div class="sheet" id="sheet"></div>
+</div>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+// ---------- Data: products are plain JS objects ----------
+const products = [
+  {id:1, name:"Snake Plant",     category:"Low light", price:499, emoji:"🪴", color:"#cfe8d5", note:"Survives weeks without water."},
+  {id:2, name:"Money Plant",     category:"Low light", price:299, emoji:"🌿", color:"#d9efc2", note:"Grows in a jar of water."},
+  {id:3, name:"Aloe Vera",       category:"Sunny",     price:349, emoji:"🌵", color:"#f6e6b4", note:"Soothing gel, easy care."},
+  {id:4, name:"Jade Plant",      category:"Sunny",     price:449, emoji:"🍀", color:"#c9ead9", note:"Thick leaves store water."},
+  {id:5, name:"Peace Lily",      category:"Flowering", price:649, emoji:"🌸", color:"#f7d9e0", note:"White blooms, droops when thirsty."},
+  {id:6, name:"Spider Plant",    category:"Low light", price:249, emoji:"🌱", color:"#dcefd0", note:"Safe for pets, makes baby plants."},
+  {id:7, name:"Orchid",          category:"Flowering", price:899, emoji:"💮", color:"#ecd9f4", note:"Blooms for months."},
+  {id:8, name:"Echeveria",       category:"Sunny",     price:199, emoji:"🪷", color:"#d3e6f0", note:"Rose-shaped desk succulent."}
+];
+const TAX_RATE = 0.05, FREE_SHIP_OVER = 1000, SHIPPING = 60;
+
+// ---------- State ----------
+let cart = [];            // [{id, qty}]
+let category = "All";
+const $ = id => document.getElementById(id);
+const money = n => "₹" + n.toLocaleString("en-IN", {maximumFractionDigits:2});
+const find = id => products.find(p => p.id === id);
+
+// ---------- Catalog rendering ----------
+function renderChips(){
+  const cats = ["All", ...new Set(products.map(p => p.category))];
+  $("chips").innerHTML = "";
+  cats.forEach(c => {
+    const b = document.createElement("button");
+    b.className = "chip"; b.textContent = c;
+    b.setAttribute("aria-pressed", c === category);
+    b.onclick = () => { category = c; renderChips(); renderProducts(); };
+    $("chips").appendChild(b);
+  });
+}
+function renderProducts(){
+  const q = $("search").value.trim().toLowerCase(), sort = $("sort").value;
+  let list = products.filter(p => (category === "All" || p.category === category) && p.name.toLowerCase().includes(q));
+  if(sort === "low") list.sort((a,b) => a.price - b.price);
+  if(sort === "high") list.sort((a,b) => b.price - a.price);
+  if(sort === "name") list.sort((a,b) => a.name.localeCompare(b.name));
+  const grid = $("grid"); grid.innerHTML = "";
+  if(!list.length){ grid.innerHTML = '<p class="empty">No plants match. Try a different search or category.</p>'; return; }
+  list.forEach(p => {
+    const card = document.createElement("article"); card.className = "card";
+    card.innerHTML = `<div class="thumb" style="background:${p.color}" aria-hidden="true">${p.emoji}</div>
+      <div class="card-body"><h3>${p.name}</h3><p class="meta">${p.category} · ${p.note}</p>
+      <div class="foot"><span class="price">${money(p.price)}</span><button class="add">Add to cart</button></div></div>`;
+    card.querySelector(".add").onclick = () => addToCart(p.id);
+    grid.appendChild(card);
+  });
+}
+
+// ---------- Cart logic ----------
+function addToCart(id){
+  const item = cart.find(i => i.id === id);
+  item ? item.qty++ : cart.push({id, qty:1});
+  renderCart(); toast(find(id).name + " added to cart");
+}
+function changeQty(id, d){
+  const item = cart.find(i => i.id === id); if(!item) return;
+  item.qty += d;
+  if(item.qty <= 0) cart = cart.filter(i => i.id !== id);
+  renderCart();
+}
+function calc(){
+  const count = cart.reduce((s,i) => s + i.qty, 0);
+  const sub = cart.reduce((s,i) => s + find(i.id).price * i.qty, 0);
+  const tax = Math.round(sub * TAX_RATE * 100) / 100;
+  const ship = sub === 0 || sub >= FREE_SHIP_OVER ? 0 : SHIPPING;
+  return {count, sub, tax, ship, total: sub + tax + ship};
+}
+function renderCart(){
+  const t = calc();
+  $("count").textContent = t.count;
+  $("sub").textContent = money(t.sub); $("tax").textContent = money(t.tax);
+  $("ship").textContent = t.ship ? money(t.ship) : (t.sub ? "Free" : "₹0");
+  $("total").textContent = money(t.total);
+  $("checkout").disabled = !t.count;
+  const ul = $("items"); ul.innerHTML = "";
+  if(!cart.length){ ul.innerHTML = '<li class="empty">Your cart is empty. Add a plant to get started.</li>'; return; }
+  cart.forEach(i => {
+    const p = find(i.id), li = document.createElement("li"); li.className = "row";
+    li.innerHTML = `<div class="em">${p.emoji}</div>
+      <div><b>${p.name}</b><span class="meta">${money(p.price)} each</span>
+      <div class="qty"><button aria-label="Decrease">−</button><span>${i.qty}</span><button aria-label="Increase">+</button></div>
+      <button class="rm">Remove</button></div><b>${money(p.price * i.qty)}</b>`;
+    const [minus, plus] = li.querySelectorAll(".qty button");
+    minus.onclick = () => changeQty(i.id, -1);
+    plus.onclick = () => changeQty(i.id, 1);
+    li.querySelector(".rm").onclick = () => changeQty(i.id, -i.qty);
+    ul.appendChild(li);
+  });
+}
+
+// ---------- Drawer, modal, toast ----------
+function toggleCart(open){
+  $("drawer").classList.toggle("open", open);
+  $("overlay").classList.toggle("open", open);
+  $("drawer").setAttribute("aria-hidden", !open);
+}
+function openModal(html){ $("sheet").innerHTML = html; $("modal").classList.add("open"); }
+function closeModal(){ $("modal").classList.remove("open"); }
+function showCheckout(){
+  const t = calc();
+  const rows = cart.map(i => `<tr><td>${find(i.id).name} × ${i.qty}</td><td>${money(find(i.id).price * i.qty)}</td></tr>`).join("");
+  openModal(`<h2 id="mTitle">Order preview</h2><p class="meta">${t.count} item${t.count>1?"s":""} · check before you confirm</p>
+    <table>${rows}
+      <tr><td>Subtotal</td><td>${money(t.sub)}</td></tr>
+      <tr><td>GST (5%)</td><td>${money(t.tax)}</td></tr>
+      <tr><td>Delivery</td><td>${t.ship ? money(t.ship) : "Free"}</td></tr>
+      <tr><td><b>Total</b></td><td><b>${money(t.total)}</b></td></tr></table>
+    <button class="primary" id="confirm">Confirm order</button>
+    <button class="ghost" id="back">Back to cart</button>`);
+  $("confirm").onclick = () => {
+    const id = "LW" + Math.floor(100000 + Math.random() * 900000);
+    cart = []; renderCart();
+    openModal(`<div class="ok"><div class="big">🌱</div><h2 id="mTitle">Order placed</h2>
+      <p class="meta">Order ${id} is confirmed. This is a demo, so no payment was taken.</p>
+      <button class="primary" id="done">Keep shopping</button></div>`);
+    $("done").onclick = () => { closeModal(); toggleCart(false); };
+  };
+  $("back").onclick = closeModal;
+}
+let toastTimer;
+function toast(msg){
+  const t = $("toast"); t.textContent = msg; t.classList.add("show");
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove("show"), 1600);
+}
+
+// ---------- Events ----------
+$("openCart").onclick = () => toggleCart(true);
+$("closeCart").onclick = $("overlay").onclick = () => toggleCart(false);
+$("checkout").onclick = showCheckout;
+$("modalBg").onclick = closeModal;
+$("clear").onclick = () => { cart = []; renderCart(); };
+$("search").oninput = $("sort").onchange = renderProducts;
+document.addEventListener("keydown", e => { if(e.key === "Escape"){ closeModal(); toggleCart(false); } });
+
+renderChips(); renderProducts(); renderCart();
+</script>
+</body>
+</html>
